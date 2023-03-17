@@ -40,21 +40,12 @@ app.secret_key="ybblog"
 
 
 
-def runSql(id, *args):
+def runSql(query, *args):
     cursor = mydb.cursor()
-    if id == 'register':
-        form = args[0]
-        sorgu = "Insert into user_table(name, email, username, password) VALUES(%s,%s,%s,%s)"
-        cursor.execute(
-            sorgu,
-            (
-            form['name'],
-            form['email'],
-            form['username'],
-            form['password']
-            )
-        )
-        mydb.commit()
+    data = args[0]
+    sorgu = query
+    cursor.execute(sorgu, data)
+    mydb.commit()
     cursor.close()
 
 
@@ -71,21 +62,21 @@ def about():
 
 @app.route("/register", methods = ["GET","POST"])
 def register():
+
     form = RegisterForm(request.form)
+    
     if request.method =="POST" and form.validate():
-        #FORM ITEMS
-        name = form.name.data
-        username = form.username.data
-        email = form.email.data
-        password = sha256_crypt.hash(form.password.data)
-        
+
+        # THIS DATA WILL BE USED FOR DB QUERY
+        data = (
+            form.name.data,
+            form.username.data,
+            form.email.data,
+            sha256_crypt.hash(form.password.data)
+        )
+
         # SQL FUNCTION
-        runSql('register', {
-            "name": name,
-            "username": username,
-            "email": email,
-            "password": password
-        })
+        runSql("Insert into user_table(name, email, username, password) VALUES(%s,%s,%s,%s)", data)
 
         # Success Message
         flash("Başarıyla Kayıt Oldunuz...","success")
