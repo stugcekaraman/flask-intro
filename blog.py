@@ -90,7 +90,7 @@ def register():
         # Success Message
         flash("Başarıyla Kayıt Oldunuz...","success")
 
-        # Success Redirection --- success is fucking enough
+        # Success Redirection
         return redirect(url_for("index"))
     else:
         
