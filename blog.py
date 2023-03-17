@@ -87,17 +87,14 @@ def register():
             "password": password
         })
 
-        # cursor = mydb.cursor()
-        # sorgu = "Insert into user_table(name, email, username, password) VALUES(%s,%s,%s,%s)"
-        # cursor.execute(sorgu,(name,email,username,password))
-        # mydb.commit()
-        # cursor.close()
+        # Success Message
         flash("Başarıyla Kayıt Oldunuz...","success")
 
-        # return redirect(url_for("index"))
-
-        return render_template("register.html",form=form)
+        # Success Redirection
+        return redirect(url_for("index"))
     else:
+        
+        # Unsuccess Redirection
         return render_template("register.html",form=form)
 
 
