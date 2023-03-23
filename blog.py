@@ -3,8 +3,7 @@ from flaskext.mysql import MySQL
 import mysql.connector
 from wtforms import Form, StringField, TextAreaField, PasswordField, EmailField,validators
 from passlib.hash import sha256_crypt
-
-
+import datetime
 
  #Kullanıcı Kayıt Formu
 class RegisterForm(Form):
@@ -46,7 +45,6 @@ app.config["MYSQL_CURSORCLASS"]="DictCursor"
 #     mydb.commit()
 #     cursor.close()
 
-
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -61,7 +59,7 @@ def about():
 def register():
 
     form = RegisterForm(request.form)
-    
+    current_time = datetime.datetime.now()
     if request.method =="POST" and form.validate():
         name = form.name.data
         username = form.username.data
@@ -69,8 +67,8 @@ def register():
         password = sha256_crypt.encrypt(form.password.data)
         
         cursor = mydb.cursor()
-        sorgu = "Insert into user_table(name, email, username, password) VALUES(%s,%s,%s,%s)"
-        cursor.execute(sorgu,(name,email,username,password))
+        sorgu = "Insert into users(name, email, username, password, created_at) VALUES(%s, %s, %s, %s, %s)"
+        cursor.execute(sorgu,(name,email,username,password, current_time))
         mydb.commit()
         cursor.close()
 
@@ -91,7 +89,7 @@ def register():
         flash("Başarıyla Kayıt Oldunuz...","success")
 
         # Success Redirection
-        return redirect(url_for("login"))
+        return redirect("/login")
     else:
         # Unsuccess Redirection
         return render_template("register.html",form=form)
@@ -104,22 +102,25 @@ def Login():
     if request.method == "POST":
         username = form.username.data
         password_entered = form.password.data
-        cursor = mydb.cursor()
-        sorgu = "Select * From user_table where username = %s"
-        result = cursor.execute(sorgu,(username,)) 
+        cursor = mydb.cursor(buffered=True)
+        sorgu = "Select * FROM users WHERE username = %s"
+        print(username)
+        result = cursor.execute(sorgu, (username,))
+        print("result: ", result)
         if result != 0:
-            data = cursor.fetchone()    
-            real_password = data[0]
-            if sha256_crypt.verify(password_entered,real_password):
-                flash("Başarıyla Giriş Yaptınız","success")
-                return redirect(url_for("index"))
-            else:
-                flash("Parolanız Yanlış.","danger")
-                # return redirect(url_for("login"))
+            print("Ifin içi")
+            # data = cursor.fetchone()    
+            # real_password = data[0]
+            # if sha256_crypt.verify(password_entered,real_password):
+            #     flash("Başarıyla Giriş Yaptınız","success")
+            #     return redirect(url_for("index"))
+            # else:
+            #     flash("Parolanız Yanlış.","danger")
+            #     return redirect(url_for("login"))
 
         else:
             flash("Böyle bir kullanıcı bulunmuyor.","danger")
-            # return redirect(url_for("login"))
+            return redirect(url_for("login"))
 
 
     return render_template("login.html", form = form)
