@@ -104,23 +104,17 @@ def Login():
         password_entered = form.password.data
         cursor = mydb.cursor(buffered=True)
         sorgu = "Select * FROM users WHERE username = %s"
-        print(username)
-        result = cursor.execute(sorgu, (username,))
-        print("result: ", result)
-        if result != 0:
-            print("Ifin içi")
-            # data = cursor.fetchone()    
-            # real_password = data[0]
-            # if sha256_crypt.verify(password_entered,real_password):
-            #     flash("Başarıyla Giriş Yaptınız","success")
-            #     return redirect(url_for("index"))
-            # else:
-            #     flash("Parolanız Yanlış.","danger")
-            #     return redirect(url_for("login"))
-
+        cursor.execute(sorgu, (username,))
+        result = cursor.fetchone()
+        if result:
+            real_password = str(result[4])
+            if sha256_crypt.verify(password_entered, real_password):
+                flash("Başarıyla Giriş Yaptınız","success")
+                return redirect(url_for("index"))
+            else:
+                flash("Parolanız Yanlış.","danger")
         else:
             flash("Böyle bir kullanıcı bulunmuyor.","danger")
-            return redirect(url_for("login"))
 
 
     return render_template("login.html", form = form)
